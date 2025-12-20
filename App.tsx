@@ -39,7 +39,10 @@ const App: React.FC = () => {
   const nextStartTimeRef = useRef<number>(0);
   
   // Logic refs
-  const isCancelledRef = useRef(false);
+  // playbackSessionIdRef ensures we only run ONE playback loop at a time. 
+  // If the ID changes, any running loops abort immediately.
+  const playbackSessionIdRef = useRef<number>(0); 
+  
   const audioBuffersRef = useRef<(AudioBuffer | null)[]>([]);
   const textChunksRef = useRef<string[]>([]);
   const selectedVoiceRef = useRef(selectedVoice);
@@ -56,20 +59,11 @@ const App: React.FC = () => {
       try {
         if (window.aistudio && await window.aistudio.hasSelectedApiKey()) {
           setIsAuthenticated(true);
-          // If in IDX/AI Studio, the key is injected into process.env, 
-          // but our service now expects a string. We pass a placeholder string 
-          // that tells the service to look in process.env if needed, 
-          // or we rely on the service to fallback.
-          // However, for strict typing, let's assume if window.aistudio exists,
-          // process.env.API_KEY is populated.
           if (typeof process !== 'undefined' && process.env.API_KEY) {
              setApiKey(process.env.API_KEY);
           }
         } else {
-          // If no global AI Studio object, we are likely on the open web (Netlify/Vercel)
-          // Enable manual entry.
           setUseManualKey(true);
-          // Check local storage for convenience
           const storedKey = localStorage.getItem('gemini_api_key');
           if (storedKey) {
             setApiKey(storedKey);
@@ -149,13 +143,19 @@ const App: React.FC = () => {
   }, []);
 
   const stopPlayback = useCallback((pauseOnly = false) => {
-    isCancelledRef.current = true;
+    // 1. Invalidate any running loops
+    playbackSessionIdRef.current += 1;
 
+    // 2. Aggressively kill the current sound
     if (activeSourceRef.current) {
-      try { activeSourceRef.current.stop(); } catch (e) { /* ignore */ }
+      try { 
+        activeSourceRef.current.stop(); 
+        activeSourceRef.current.disconnect();
+      } catch (e) { /* ignore */ }
       activeSourceRef.current = null;
     }
 
+    // 3. Update UI state
     if (pauseOnly) {
       setStatus('paused');
     } else {
@@ -182,6 +182,7 @@ const App: React.FC = () => {
 
       generateSpeechChunk(chunks[i], voiceAtStart, keyToUse)
         .then(async (base64) => {
+          // If the voice changed while we were fetching, discard this chunk
           if (selectedVoiceRef.current !== voiceAtStart) return;
 
           const ctx = audioContextRef.current || getAudioContext();
@@ -205,7 +206,7 @@ const App: React.FC = () => {
   const handleFetchContent = async () => {
     setError(null);
     setIsLoadingContent(true);
-    stopPlayback(false);
+    stopPlayback(false); // Reset everything
     setAudioBuffers([]);
     setTextChunks([]);
     processingChunksRef.current.clear();
@@ -238,17 +239,26 @@ const App: React.FC = () => {
       return;
     }
 
-    isCancelledRef.current = false;
+    // Capture the session ID for THIS specific playback loop
+    const sessionId = playbackSessionIdRef.current;
+
     setStatus('playing');
     initAudio();
     const ctx = audioContextRef.current!;
     if (ctx.state === 'suspended') await ctx.resume();
 
+    // Reset timing cursor if we are starting fresh (not just pausing)
+    // However, for simplicity, we often just use currentTime + small buffer
     nextStartTimeRef.current = ctx.currentTime + 0.1;
+    
+    // Kick off prefetch
     prefetchWindow(startIndex);
 
     for (let i = startIndex; i < textChunksRef.current.length; i++) {
-      if (isCancelledRef.current) break;
+      // 1. CRITICAL: Check if this loop has been cancelled/superseded
+      if (playbackSessionIdRef.current !== sessionId) {
+        return; 
+      }
 
       setCurrentChunkIndex(i);
       prefetchWindow(i + 1, 3);
@@ -256,6 +266,7 @@ const App: React.FC = () => {
       try {
         let buffer = audioBuffersRef.current[i];
 
+        // If buffer is missing, we must fetch it now (blocking the loop)
         if (!buffer) {
           const voiceToUse = selectedVoiceRef.current;
           const textToUse = textChunksRef.current[i];
@@ -265,8 +276,9 @@ const App: React.FC = () => {
           const base64 = await generateSpeechChunk(textToUse, voiceToUse, keyToUse);
           processingChunksRef.current.delete(i);
           
-          if (isCancelledRef.current) break;
-          if (voiceToUse !== selectedVoiceRef.current) break;
+          // Check cancellation again after await
+          if (playbackSessionIdRef.current !== sessionId) return;
+          if (voiceToUse !== selectedVoiceRef.current) break; // Voice changed, abort
 
           buffer = await decodeAudioData(base64, ctx, SAMPLE_RATE);
           
@@ -277,54 +289,89 @@ const App: React.FC = () => {
           });
         }
 
-        if (isCancelledRef.current) break;
-        await playBuffer(buffer);
+        // Check cancellation again
+        if (playbackSessionIdRef.current !== sessionId) return;
+
+        // Play the buffer and wait for it to finish
+        await playBuffer(buffer, sessionId);
 
       } catch (err) {
         console.error(`Error playing chunk ${i}`, err);
-        setError(`Playback error at paragraph ${i + 1}`);
-        stopPlayback(true);
+        // Only show error if we are still the active session
+        if (playbackSessionIdRef.current === sessionId) {
+          setError(`Playback error at paragraph ${i + 1}`);
+          stopPlayback(true);
+        }
         break;
       }
     }
     
-    if (!isCancelledRef.current) {
+    // If we finished the loop naturally and are still the active session
+    if (playbackSessionIdRef.current === sessionId) {
       setStatus('idle');
       setCurrentChunkIndex(-1);
     }
   };
 
-  const playBuffer = (buffer: AudioBuffer): Promise<void> => {
+  const playBuffer = (buffer: AudioBuffer, sessionId: number): Promise<void> => {
     return new Promise((resolve) => {
+      // Last check before emitting sound
+      if (playbackSessionIdRef.current !== sessionId) {
+        resolve(); // Resolve immediately to exit loop
+        return;
+      }
+
       const ctx = audioContextRef.current!;
+      
+      // Stop any existing source just in case (double safety)
+      if (activeSourceRef.current) {
+        try { activeSourceRef.current.stop(); } catch(e) {}
+      }
+
       const source = ctx.createBufferSource();
       source.buffer = buffer;
       source.playbackRate.value = speedRef.current;
       source.connect(ctx.destination);
 
+      // Ensure we don't schedule in the past
       if (nextStartTimeRef.current < ctx.currentTime) {
         nextStartTimeRef.current = ctx.currentTime;
       }
       
       source.start(nextStartTimeRef.current);
       activeSourceRef.current = source;
+      
       const duration = buffer.duration / speedRef.current;
       nextStartTimeRef.current += duration;
-      source.onended = () => resolve();
+      
+      source.onended = () => {
+        // Only resolve if we are still active; otherwise the loop is dead anyway
+        resolve();
+      };
     });
   };
 
   const handleTogglePlay = () => {
     if (status === 'playing') {
-      stopPlayback(true);
+      stopPlayback(true); // Pause
     } else {
+      // Resume or Start
+      // Increment ID to ensure we start a fresh loop
+      playbackSessionIdRef.current += 1; 
+      
       const startIndex = currentChunkIndex > -1 ? currentChunkIndex : 0;
       playQueue(startIndex);
     }
   };
 
   const handleParagraphClick = (index: number) => {
+    // 1. Stop everything immediately
     stopPlayback(true); 
+    
+    // 2. Start a fresh session
+    playbackSessionIdRef.current += 1;
+    
+    // 3. Small timeout to allow UI to settle, though ID system handles race conditions
     setTimeout(() => {
         playQueue(index);
     }, 10);
