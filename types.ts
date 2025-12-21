@@ -18,6 +18,19 @@ export interface PlayerState {
   selectedVoice: string;
 }
 
+export interface DocumentSection {
+  id: string;
+  title: string;
+  summary?: string;
+  cue?: string;
+}
+
+export interface FilePayload {
+  base64: string;
+  mimeType: string;
+  name: string;
+}
+
 declare global {
   interface AIStudio {
     hasSelectedApiKey: () => Promise<boolean>;
