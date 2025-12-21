@@ -4,7 +4,7 @@ import { TTS_MODEL, TEXT_MODEL } from '../constants';
 /**
  * Creates a new instance of the GoogleGenAI client.
  */
-const getAiClient = (apiKey: string | undefined) => {
+export const getAiClient = (apiKey: string | undefined) => {
   // Use the passed key, or fall back to process.env if available (for dev environments)
   const key = apiKey || (typeof process !== 'undefined' ? process.env.API_KEY : undefined);
   if (!key) throw new Error("API Key is missing");
