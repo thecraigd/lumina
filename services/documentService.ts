@@ -2,6 +2,19 @@ import { TEXT_MODEL } from '../constants';
 import { DocumentSection, FilePayload } from '../types';
 import { getAiClient } from './geminiService';
 
+const guessMimeType = (file: File): string => {
+  const ext = file.name.toLowerCase().split('.').pop() || '';
+  const explicit = file.type;
+
+  if (['md', 'markdown', 'mdown'].includes(ext)) return 'text/markdown';
+  if (ext === 'txt') return 'text/plain';
+  if (ext === 'pdf') return 'application/pdf';
+  // EPUB is a zip container; Gemini rejects application/epub+zip, so use octet-stream.
+  if (ext === 'epub') return 'application/octet-stream';
+
+  return explicit || 'application/octet-stream';
+};
+
 const readFileAsBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -23,6 +36,7 @@ export const buildFilePayload = async (file: File): Promise<FilePayload> => {
   const base64 = await readFileAsBase64(file);
   return {
     base64,
+    mimeType: guessMimeType(file),
     mimeType: file.type || 'application/octet-stream',
     name: file.name,
   };
@@ -53,6 +67,7 @@ export const analyzeDocumentOutline = async (
           {
             text: `
 You are assisting with creating a listening playlist from a document upload (PDF, EPUB, or Markdown).
+File name: ${payload.name}. Treat EPUB as a ZIP container with XHTML/HTML content inside.
 Look for natural sections such as a table of contents, chapters, headings, or executive summaries without deeply reading the full text.
 Return a concise JSON payload: {"sections":[{"title":"...","summary":"...","cue":"..."}]}.
 - Prefer existing section titles/headings.
@@ -121,6 +136,7 @@ export const extractSectionTextFromFile = async (
           {
             text: `
 Using the attached document, extract only the text for the section titled "${sectionTitle}".
+File name: ${payload.name}. If this is an EPUB, unzip and read the XHTML/HTML chapters to find the section.
 - If there is a close match or subsection, choose the best fit.
 - Do not summarize; provide verbatim text with paragraphs separated by blank lines.
 - Keep output under 1,800 words to stay TTS friendly.
