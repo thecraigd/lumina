@@ -2,24 +2,17 @@ import { TEXT_MODEL } from '../constants';
 import { DocumentSection, FilePayload } from '../types';
 import { getAiClient } from './geminiService';
 
-const EXTENSION_MIME_MAP: Record<string, string> = {
-  md: 'text/markdown',
-  markdown: 'text/markdown',
-  mdown: 'text/markdown',
-  txt: 'text/plain',
-  pdf: 'application/pdf',
-  // EPUB is a zip container; Gemini rejects application/epub+zip, so use octet-stream.
-  epub: 'application/octet-stream',
-};
-
 const guessMimeType = (file: File): string => {
   const ext = file.name.toLowerCase().split('.').pop() || '';
-  const explicit = file.type?.trim();
+  const explicit = file.type;
 
-  if (EXTENSION_MIME_MAP[ext]) return EXTENSION_MIME_MAP[ext];
-  if (explicit) return explicit;
+  if (['md', 'markdown', 'mdown'].includes(ext)) return 'text/markdown';
+  if (ext === 'txt') return 'text/plain';
+  if (ext === 'pdf') return 'application/pdf';
+  // EPUB is a zip container; Gemini rejects application/epub+zip, so use octet-stream.
+  if (ext === 'epub') return 'application/octet-stream';
 
-  return 'application/octet-stream';
+  return explicit || 'application/octet-stream';
 };
 
 const readFileAsBase64 = (file: File): Promise<string> => {
@@ -44,6 +37,7 @@ export const buildFilePayload = async (file: File): Promise<FilePayload> => {
   return {
     base64,
     mimeType: guessMimeType(file),
+    mimeType: file.type || 'application/octet-stream',
     name: file.name,
   };
 };
