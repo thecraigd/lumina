@@ -10,7 +10,7 @@ const guessMimeType = (file: File): string => {
   if (ext === 'txt') return 'text/plain';
   if (ext === 'pdf') return 'application/pdf';
   // EPUB is a zip container; Gemini rejects application/epub+zip, so use octet-stream.
-  if (ext === 'epub') return 'application/octet-stream';
+  if (ext === 'epub' || explicit === 'application/epub+zip') return 'application/octet-stream';
 
   return explicit || 'application/octet-stream';
 };
@@ -42,14 +42,38 @@ export const buildFilePayload = async (file: File): Promise<FilePayload> => {
   };
 };
 
-const extractResponseText = (response: any): string | undefined => {
+const extractResponseText = async (response: any): Promise<string | undefined> => {
   if (typeof response?.text === 'function') {
-    return response.text();
+    const textValue = response.text();
+    if (typeof textValue === 'string') return textValue;
+    if (textValue && typeof textValue.then === 'function') {
+      return await textValue;
+    }
   }
   if (typeof response?.text === 'string') {
     return response.text;
   }
-  return response?.candidates?.[0]?.content?.parts?.[0]?.text;
+  const parts =
+    response?.candidates?.[0]?.content?.parts ??
+    response?.response?.candidates?.[0]?.content?.parts;
+  if (Array.isArray(parts)) {
+    const textPart = parts.find((part: any) => typeof part?.text === 'string');
+    return textPart?.text;
+  }
+  return undefined;
+};
+
+const normalizeJsonText = (text: string): string => {
+  let cleaned = text.trim();
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+  }
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+  }
+  return cleaned;
 };
 
 export const analyzeDocumentOutline = async (
@@ -86,12 +110,12 @@ Return a concise JSON payload: {"sections":[{"title":"...","summary":"...","cue"
     },
   });
 
-  const text = extractResponseText(response);
+  const text = await extractResponseText(response);
   if (!text) throw new Error('Gemini returned no outline data.');
 
   let parsed: any;
   try {
-    parsed = JSON.parse(text);
+    parsed = JSON.parse(normalizeJsonText(text));
   } catch {
     throw new Error('Unable to parse outline from Gemini response.');
   }
@@ -152,7 +176,7 @@ File name: ${payload.name}. If this is an EPUB, unzip and read the XHTML/HTML ch
     },
   });
 
-  const text = extractResponseText(response);
+  const text = await extractResponseText(response);
   if (!text) {
     throw new Error('Gemini could not extract that section.');
   }
