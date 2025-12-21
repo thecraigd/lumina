@@ -2,8 +2,8 @@ export const TTS_MODEL = 'gemini-2.5-flash-preview-tts';
 export const TEXT_MODEL = 'gemini-3-flash-preview';
 
 export const VOICES = [
-  { name: 'Puck', gender: 'Male', style: 'Soft, Deep' },
   { name: 'Charon', gender: 'Male', style: 'Deep, Resonant' },
+  { name: 'Puck', gender: 'Male', style: 'Soft, Deep' },
   { name: 'Kore', gender: 'Female', style: 'Calm, Soothing' },
   { name: 'Fenrir', gender: 'Male', style: 'Rough, Intense' },
   { name: 'Zephyr', gender: 'Female', style: 'Clear, Bright' },
