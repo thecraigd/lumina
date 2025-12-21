@@ -37,6 +37,7 @@ export const buildFilePayload = async (file: File): Promise<FilePayload> => {
   return {
     base64,
     mimeType: guessMimeType(file),
+    mimeType: file.type || 'application/octet-stream',
     name: file.name,
   };
 };
