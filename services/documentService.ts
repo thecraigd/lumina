@@ -58,7 +58,7 @@ const coerceSections = (parsed: any): DocumentSection[] => {
       : [];
 
   const sections = rawSections
-    .map((section: any, index: number) => {
+    .map((section: unknown, index: number): DocumentSection | null => {
       if (typeof section === 'string') {
         return {
           id: `${index}-${section.substring(0, 64)}`,
@@ -67,16 +67,16 @@ const coerceSections = (parsed: any): DocumentSection[] => {
         };
       }
       if (!section || typeof section !== 'object') return null;
-      const title = section.title || section.heading || section.name;
+      const title = (section as any).title || (section as any).heading || (section as any).name;
       if (!title) return null;
       return {
         id: `${index}-${String(title).substring(0, 64)}`,
         title,
-        summary: section.summary,
-        cue: section.cue ?? title,
+        summary: (section as any).summary,
+        cue: (section as any).cue ?? title,
       };
     })
-    .filter((section): section is DocumentSection => Boolean(section));
+    .filter((section: DocumentSection | null): section is DocumentSection => Boolean(section));
 
   return sections;
 };
