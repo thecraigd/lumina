@@ -37,9 +37,48 @@ export const buildFilePayload = async (file: File): Promise<FilePayload> => {
   return {
     base64,
     mimeType: guessMimeType(file),
-    mimeType: file.type || 'application/octet-stream',
     name: file.name,
   };
+};
+
+const fallbackSections = (summary?: string): DocumentSection[] => [
+  {
+    id: 'full',
+    title: 'Full document',
+    summary: summary || 'Single pass narration of the uploaded file.',
+    cue: 'Full document',
+  },
+];
+
+const coerceSections = (parsed: any): DocumentSection[] => {
+  const rawSections = Array.isArray(parsed?.sections)
+    ? parsed.sections
+    : Array.isArray(parsed)
+      ? parsed
+      : [];
+
+  const sections = rawSections
+    .map((section: any, index: number) => {
+      if (typeof section === 'string') {
+        return {
+          id: `${index}-${section.substring(0, 64)}`,
+          title: section,
+          cue: section,
+        };
+      }
+      if (!section || typeof section !== 'object') return null;
+      const title = section.title || section.heading || section.name;
+      if (!title) return null;
+      return {
+        id: `${index}-${String(title).substring(0, 64)}`,
+        title,
+        summary: section.summary,
+        cue: section.cue ?? title,
+      };
+    })
+    .filter((section): section is DocumentSection => Boolean(section));
+
+  return sections;
 };
 
 const extractResponseText = async (response: any): Promise<string | undefined> => {
@@ -70,8 +109,22 @@ const normalizeJsonText = (text: string): string => {
   }
   const firstBrace = cleaned.indexOf('{');
   const lastBrace = cleaned.lastIndexOf('}');
-  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-    cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+  const firstBracket = cleaned.indexOf('[');
+  const lastBracket = cleaned.lastIndexOf(']');
+  const firstJsonStart =
+    firstBrace === -1
+      ? firstBracket
+      : firstBracket === -1
+        ? firstBrace
+        : Math.min(firstBrace, firstBracket);
+  const lastJsonEnd =
+    lastBrace === -1
+      ? lastBracket
+      : lastBracket === -1
+        ? lastBrace
+        : Math.max(lastBrace, lastBracket);
+  if (firstJsonStart !== -1 && lastJsonEnd !== -1 && lastJsonEnd > firstJsonStart) {
+    cleaned = cleaned.slice(firstJsonStart, lastJsonEnd + 1);
   }
   return cleaned;
 };
@@ -93,11 +146,12 @@ export const analyzeDocumentOutline = async (
 You are assisting with creating a listening playlist from a document upload (PDF, EPUB, or Markdown).
 File name: ${payload.name}. Treat EPUB as a ZIP container with XHTML/HTML content inside.
 Look for natural sections such as a table of contents, chapters, headings, or executive summaries without deeply reading the full text.
-Return a concise JSON payload: {"sections":[{"title":"...","summary":"...","cue":"..."}]}.
+Return ONLY valid JSON (no markdown, no commentary).
+Schema: {"sections":[{"title":"...","summary":"...","cue":"..."}]}.
 - Prefer existing section titles/headings.
 - Keep summaries under 30 words.
 - Limit to 15 sections.
-- If no structure exists, return a single "Full document" section with an informative summary.`,
+- If no structure exists, return exactly: {"sections":[{"title":"Full document","summary":"No clear headings detected.","cue":"Full document"}]}.`,
           },
           { inlineData: { data: payload.base64, mimeType: payload.mimeType } },
         ],
@@ -111,37 +165,25 @@ Return a concise JSON payload: {"sections":[{"title":"...","summary":"...","cue"
   });
 
   const text = await extractResponseText(response);
-  if (!text) throw new Error('Gemini returned no outline data.');
+  if (!text) {
+    return fallbackSections('No outline data returned; narrate the full document.');
+  }
 
-  let parsed: any;
   try {
-    parsed = JSON.parse(normalizeJsonText(text));
-  } catch {
-    throw new Error('Unable to parse outline from Gemini response.');
+    const parsed = JSON.parse(normalizeJsonText(text));
+    const sections = coerceSections(parsed);
+    if (sections.length === 0) {
+      return fallbackSections('No clear headings detected; narrate the full document.');
+    }
+    return sections;
+  } catch (error) {
+    console.warn(
+      'Unable to parse outline response; falling back to full document.',
+      error,
+      text.slice(0, 1200)
+    );
+    return fallbackSections('Outline parsing failed; narrate the full document.');
   }
-
-  const sections: DocumentSection[] = Array.isArray(parsed?.sections)
-    ? parsed.sections
-        .filter((section: any) => section?.title)
-        .map((section: any, index: number) => ({
-          id: `${index}-${section.title.substring(0, 64)}`,
-          title: section.title,
-          summary: section.summary,
-          cue: section.cue ?? section.title,
-        }))
-    : [];
-
-  if (sections.length === 0) {
-    return [
-      {
-        id: 'full',
-        title: 'Full document',
-        summary: 'Single pass narration of the uploaded file.',
-      },
-    ];
-  }
-
-  return sections;
 };
 
 export const extractSectionTextFromFile = async (
@@ -150,6 +192,24 @@ export const extractSectionTextFromFile = async (
   apiKey: string
 ): Promise<string> => {
   const ai = getAiClient(apiKey);
+  const normalizedTitle = sectionTitle.trim();
+  const isFullDocument =
+    normalizedTitle.toLowerCase() === 'full document' ||
+    normalizedTitle.toLowerCase().startsWith('full document');
+  const prompt = isFullDocument
+    ? `
+Using the attached document, extract the primary narrative text of the document.
+File name: ${payload.name}. If this is an EPUB, unzip and read the XHTML/HTML chapters.
+- Do not summarize; provide verbatim text with paragraphs separated by blank lines.
+- Keep output under 1,800 words to stay TTS friendly.
+- If the document is extremely long, return the strongest continuous portion from the beginning.`
+    : `
+Using the attached document, extract only the text for the section titled "${normalizedTitle}".
+File name: ${payload.name}. If this is an EPUB, unzip and read the XHTML/HTML chapters to find the section.
+- If there is a close match or subsection, choose the best fit.
+- Do not summarize; provide verbatim text with paragraphs separated by blank lines.
+- Keep output under 1,800 words to stay TTS friendly.
+- If the section is missing, return the strongest available portion that matches the cue.`;
 
   const response = await ai.models.generateContent({
     model: TEXT_MODEL,
@@ -157,15 +217,7 @@ export const extractSectionTextFromFile = async (
       {
         role: 'user',
         parts: [
-          {
-            text: `
-Using the attached document, extract only the text for the section titled "${sectionTitle}".
-File name: ${payload.name}. If this is an EPUB, unzip and read the XHTML/HTML chapters to find the section.
-- If there is a close match or subsection, choose the best fit.
-- Do not summarize; provide verbatim text with paragraphs separated by blank lines.
-- Keep output under 1,800 words to stay TTS friendly.
-- If the section is missing, return the strongest available portion that matches the cue.`,
-          },
+          { text: prompt },
           { inlineData: { data: payload.base64, mimeType: payload.mimeType } },
         ],
       },
