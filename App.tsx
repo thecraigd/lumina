@@ -520,13 +520,13 @@ const App: React.FC = () => {
 
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-2">
             <span className="flex h-2 w-2 rounded-full bg-emerald-500"></span>
-            <span className="text-xs font-medium text-slate-300 tracking-wide uppercase">Powered by Gemini 2.5</span>
+            <span className="text-xs font-medium text-slate-300 tracking-wide uppercase">Powered by Gemini</span>
         </div>
         <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-indigo-100 to-indigo-400 text-glow">
           Lumina
         </h1>
         <p className="text-lg text-slate-400 max-w-lg mx-auto leading-relaxed">
-          Transform the web into your personal audio library with ultra-realistic AI narration.
+          Transform the web into your personal audio library with realistic AI narration.
         </p>
       </header>
 
