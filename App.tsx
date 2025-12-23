@@ -37,6 +37,10 @@ const App: React.FC = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const activeSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const nextStartTimeRef = useRef<number>(0);
+  const chunkStartTimeRef = useRef<number>(0);
+  const chunkStartOffsetRef = useRef<number>(0);
+  const chunkPlaybackRateRef = useRef<number>(speed);
+  const resumeOffsetRef = useRef<number>(0);
   
   // Logic refs
   // playbackSessionIdRef ensures we only run ONE playback loop at a time. 
@@ -88,8 +92,25 @@ const App: React.FC = () => {
   useEffect(() => { 
     speedRef.current = speed; 
     if (activeSourceRef.current) {
-      try { activeSourceRef.current.playbackRate.value = speed; } catch(e) {}
+      try {
+        const ctx = audioContextRef.current;
+        if (ctx) {
+          const now = ctx.currentTime;
+          if (now > chunkStartTimeRef.current) {
+            const elapsed = now - chunkStartTimeRef.current;
+            const rateAtStart = chunkPlaybackRateRef.current || speed;
+            chunkStartOffsetRef.current += elapsed * rateAtStart;
+            chunkStartTimeRef.current = now;
+            const duration = activeSourceRef.current.buffer?.duration;
+            if (duration && chunkStartOffsetRef.current > duration) {
+              chunkStartOffsetRef.current = duration;
+            }
+          }
+        }
+        activeSourceRef.current.playbackRate.value = speed;
+      } catch(e) {}
     }
+    chunkPlaybackRateRef.current = speed;
   }, [speed]);
 
   // --- Actions ---
@@ -158,6 +179,29 @@ const App: React.FC = () => {
   }, []);
 
   const stopPlayback = useCallback((pauseOnly = false) => {
+    if (pauseOnly) {
+      const ctx = audioContextRef.current;
+      const buffer = activeSourceRef.current?.buffer;
+      if (ctx && buffer) {
+        const elapsed = Math.max(0, ctx.currentTime - chunkStartTimeRef.current);
+        const rate = chunkPlaybackRateRef.current || speedRef.current;
+        const duration = buffer.duration;
+        let nextOffset = chunkStartOffsetRef.current + elapsed * rate;
+        if (duration > 0) {
+          nextOffset = Math.min(Math.max(nextOffset, 0), duration);
+        } else {
+          nextOffset = 0;
+        }
+        resumeOffsetRef.current = nextOffset;
+      } else {
+        resumeOffsetRef.current = 0;
+      }
+    } else {
+      resumeOffsetRef.current = 0;
+      chunkStartOffsetRef.current = 0;
+      chunkStartTimeRef.current = 0;
+    }
+
     // 1. Invalidate any running loops
     playbackSessionIdRef.current += 1;
 
@@ -248,7 +292,7 @@ const App: React.FC = () => {
     }
   };
 
-  const playQueue = async (startIndex: number) => {
+  const playQueue = async (startIndex: number, startOffset = 0) => {
     if (startIndex >= textChunksRef.current.length) {
       stopPlayback(false);
       return;
@@ -308,7 +352,11 @@ const App: React.FC = () => {
         if (playbackSessionIdRef.current !== sessionId) return;
 
         // Play the buffer and wait for it to finish
-        await playBuffer(buffer, sessionId);
+        const offset = i === startIndex ? startOffset : 0;
+        await playBuffer(buffer, sessionId, offset);
+        if (i === startIndex) {
+          resumeOffsetRef.current = 0;
+        }
 
       } catch (err) {
         console.error(`Error playing chunk ${i}`, err);
@@ -328,7 +376,7 @@ const App: React.FC = () => {
     }
   };
 
-  const playBuffer = (buffer: AudioBuffer, sessionId: number): Promise<void> => {
+  const playBuffer = (buffer: AudioBuffer, sessionId: number, startOffset = 0): Promise<void> => {
     return new Promise((resolve) => {
       // Last check before emitting sound
       if (playbackSessionIdRef.current !== sessionId) {
@@ -341,6 +389,7 @@ const App: React.FC = () => {
       // Stop any existing source just in case (double safety)
       if (activeSourceRef.current) {
         try { activeSourceRef.current.stop(); } catch(e) {}
+        activeSourceRef.current = null;
       }
 
       const source = ctx.createBufferSource();
@@ -348,16 +397,33 @@ const App: React.FC = () => {
       source.playbackRate.value = speedRef.current;
       source.connect(ctx.destination);
 
+      const duration = buffer.duration;
+      const clampedOffset = Math.min(Math.max(startOffset, 0), duration);
+      const remainingDuration = Math.max(0, duration - clampedOffset) / speedRef.current;
+
       // Ensure we don't schedule in the past
       if (nextStartTimeRef.current < ctx.currentTime) {
         nextStartTimeRef.current = ctx.currentTime;
       }
-      
-      source.start(nextStartTimeRef.current);
+
+      if (remainingDuration === 0) {
+        chunkStartOffsetRef.current = clampedOffset;
+        chunkStartTimeRef.current = ctx.currentTime;
+        chunkPlaybackRateRef.current = source.playbackRate.value;
+        nextStartTimeRef.current += remainingDuration;
+        resolve();
+        return;
+      }
+
+      const startAt = nextStartTimeRef.current;
+      source.start(startAt, clampedOffset);
       activeSourceRef.current = source;
-      
-      const duration = buffer.duration / speedRef.current;
-      nextStartTimeRef.current += duration;
+
+      chunkStartOffsetRef.current = clampedOffset;
+      chunkStartTimeRef.current = startAt;
+      chunkPlaybackRateRef.current = source.playbackRate.value;
+
+      nextStartTimeRef.current += remainingDuration;
       
       source.onended = () => {
         // Only resolve if we are still active; otherwise the loop is dead anyway
@@ -375,7 +441,8 @@ const App: React.FC = () => {
       playbackSessionIdRef.current += 1; 
       
       const startIndex = currentChunkIndex > -1 ? currentChunkIndex : 0;
-      playQueue(startIndex);
+      const startOffset = status === 'paused' ? resumeOffsetRef.current : 0;
+      playQueue(startIndex, startOffset);
     }
   };
 

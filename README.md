@@ -23,8 +23,7 @@ Live at https://reader-lumina.netlify.app/
 2. For URL mode, Gemini uses search grounding to pull the primary article content.
 3. The text is split into paragraph-sized chunks for TTS reliability.
 4. Each chunk is sent to Gemini TTS and returned as base64 audio.
-5. The app decodes the audio and queues it with the Web Audio API, prefetching
-   upcoming chunks for smooth playback.
+5. The app decodes the audio and queues it with the Web Audio API, prefetching upcoming chunks for smooth playback.
 
 ## Tech stack
 - React + TypeScript + Vite
