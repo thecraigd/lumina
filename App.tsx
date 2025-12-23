@@ -3,10 +3,8 @@ import ArticleDisplay from './components/ArticleDisplay';
 import PlayerBar from './components/PlayerBar';
 import SettingsModal from './components/SettingsModal';
 import { extractTextFromUrl, generateSpeechChunk } from './services/geminiService';
-import { analyzeDocumentOutline, buildFilePayload, extractSectionTextFromFile } from './services/documentService';
 import { decodeAudioData, getAudioContext } from './utils/audioUtils';
-import { MAX_UPLOAD_BYTES, SAMPLE_RATE, VOICES } from './constants';
-import { DocumentSection, FilePayload } from './types';
+import { SAMPLE_RATE, VOICES } from './constants';
 
 const App: React.FC = () => {
   // --- Auth State ---
@@ -18,14 +16,9 @@ const App: React.FC = () => {
   // --- App State ---
   const [url, setUrl] = useState('');
   const [rawText, setRawText] = useState('');
-  const [mode, setMode] = useState<'url' | 'text' | 'file'>('url');
-  const [uploadedFileName, setUploadedFileName] = useState('');
-  const [filePayload, setFilePayload] = useState<FilePayload | null>(null);
-  const [fileOutline, setFileOutline] = useState<DocumentSection[]>([]);
-  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  const [mode, setMode] = useState<'url' | 'text'>('url');
   
   const [isLoadingContent, setIsLoadingContent] = useState(false);
-  const [isAnalyzingFile, setIsAnalyzingFile] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [textChunks, setTextChunks] = useState<string[]>([]);
@@ -238,15 +231,9 @@ const App: React.FC = () => {
       if (mode === 'url') {
         if (!url) throw new Error("Please enter a URL.");
         content = await extractTextFromUrl(url, apiKeyRef.current);
-      } else if (mode === 'text') {
+      } else {
         if (!rawText) throw new Error("Please enter some text.");
         content = rawText;
-      } else {
-        if (!filePayload) throw new Error("Please upload a document.");
-        if (!selectedSectionId) throw new Error("Select a section to narrate.");
-        const selectedSection = fileOutline.find(section => section.id === selectedSectionId);
-        if (!selectedSection) throw new Error("Selected section is unavailable.");
-        content = await extractSectionTextFromFile(filePayload, selectedSection.cue || selectedSection.title, apiKeyRef.current);
       }
 
       const chunks = chunkText(content);
@@ -412,63 +399,13 @@ const App: React.FC = () => {
       processingChunksRef.current.clear();
   };
 
-  const handleModeChange = (nextMode: 'url' | 'text' | 'file') => {
+  const handleModeChange = (nextMode: 'url' | 'text') => {
     setMode(nextMode);
     setError(null);
     stopPlayback(false);
     setAudioBuffers([]);
     setTextChunks([]);
     processingChunksRef.current.clear();
-
-    if (nextMode !== 'file') {
-      setFilePayload(null);
-      setFileOutline([]);
-      setSelectedSectionId(null);
-      setUploadedFileName('');
-      setIsAnalyzingFile(false);
-    }
-  };
-
-  const handleFileSelection = async (file: File | null) => {
-    if (!file) return;
-    if (file.size > MAX_UPLOAD_BYTES) {
-      setError('Please upload a file smaller than 15MB.');
-      return;
-    }
-
-    setIsAnalyzingFile(true);
-    setError(null);
-    setUploadedFileName(file.name);
-    stopPlayback(false);
-    setAudioBuffers([]);
-    setTextChunks([]);
-    setFileOutline([]);
-    setSelectedSectionId(null);
-    setFilePayload(null);
-    processingChunksRef.current.clear();
-
-    try {
-      const payload = await buildFilePayload(file);
-      setFilePayload(payload);
-      const outline = await analyzeDocumentOutline(payload, apiKeyRef.current);
-      setFileOutline(outline);
-      if (outline[0]) {
-        setSelectedSectionId(outline[0].id);
-      }
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Unable to analyze that file.');
-    } finally {
-      setIsAnalyzingFile(false);
-    }
-  };
-
-  const handleSectionSelect = (sectionId: string) => {
-    setSelectedSectionId(sectionId);
-    stopPlayback(false);
-    setAudioBuffers([]);
-    setTextChunks([]);
-    setRawText('');
   };
 
   let playLabel = "Read Aloud";
@@ -623,17 +560,6 @@ const App: React.FC = () => {
                 Paste Text
                 {mode === 'text' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></span>}
               </button>
-              <button 
-                onClick={() => handleModeChange('file')}
-                className={`pb-4 text-sm font-semibold tracking-wide transition-all relative ${
-                  mode === 'file' 
-                    ? 'text-white' 
-                    : 'text-slate-500 hover:text-slate-300'
-                }`}
-              >
-                Upload File
-                {mode === 'file' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></span>}
-              </button>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 items-stretch">
@@ -662,29 +588,9 @@ const App: React.FC = () => {
                 </div>
               )}
 
-              {mode === 'file' && (
-                <label className="flex-1 border border-dashed border-white/10 rounded-xl bg-slate-900/50 px-5 py-4 text-slate-300 cursor-pointer hover:border-indigo-400/40 transition-all group">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 rounded-lg bg-white/5 text-indigo-300">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12l-4-4m4 4l4-4m-4 4V4" /></svg>
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-white group-hover:text-indigo-100 transition-colors">Upload PDF, EPUB, or Markdown</p>
-                      <p className="text-xs text-slate-500">{uploadedFileName || 'Max 15 MB. We only process the section you choose.'}</p>
-                    </div>
-                  </div>
-                  <input
-                    type="file"
-                    accept=".pdf,.epub,.md,.markdown,.txt,.mdown"
-                    className="hidden"
-                    onChange={(e) => handleFileSelection(e.target.files?.[0] || null)}
-                  />
-                </label>
-              )}
-              
               <button
                 onClick={handleFetchContent}
-                disabled={isLoadingContent || status === 'playing' || (mode === 'file' && (!filePayload || isAnalyzingFile))}
+                disabled={isLoadingContent || status === 'playing'}
                 className="
                   relative overflow-hidden
                   bg-indigo-600 hover:bg-indigo-500 
@@ -708,7 +614,6 @@ const App: React.FC = () => {
                       <span>
                         {mode === 'url' && 'Generate'}
                         {mode === 'text' && 'Read'}
-                        {mode === 'file' && 'Read section'}
                       </span>
                       <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                     </>
@@ -723,51 +628,6 @@ const App: React.FC = () => {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 {error}
-              </div>
-            )}
-
-            {mode === 'file' && (
-              <div className="mt-6 space-y-3">
-                {isAnalyzingFile && (
-                  <div className="p-4 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-sm text-indigo-100 flex items-center gap-3">
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle className="opacity-25" cx="12" cy="12" r="10" strokeWidth="4"></circle><path className="opacity-75" d="M4 12a8 8 0 018-8" strokeWidth="4" strokeLinecap="round"></path></svg>
-                    <span>Scanning for chapters and headings…</span>
-                  </div>
-                )}
-
-                {fileOutline.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm text-slate-400">Choose a section to narrate from {uploadedFileName || 'your document'}.</p>
-                      <span className="text-[11px] uppercase tracking-wide text-slate-500">Smart Section Preview</span>
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      {fileOutline.map((section) => {
-                        const isSelected = section.id === selectedSectionId;
-                        return (
-                          <button
-                            key={section.id}
-                            onClick={() => handleSectionSelect(section.id)}
-                            className={`
-                              w-full text-left rounded-xl border transition-all p-4
-                              ${isSelected ? 'border-indigo-500/60 bg-indigo-500/10 shadow-lg shadow-indigo-900/20' : 'border-white/10 bg-white/5 hover:border-white/30'}
-                            `}
-                          >
-                            <p className="text-sm font-semibold text-white mb-1">{section.title}</p>
-                            {section.summary && <p className="text-xs text-slate-400 leading-relaxed">{section.summary}</p>}
-                            {!section.summary && <p className="text-xs text-slate-500">No summary available.</p>}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {!isAnalyzingFile && fileOutline.length === 0 && uploadedFileName && (
-                  <div className="p-3 rounded-lg bg-white/5 text-slate-400 text-sm border border-white/10">
-                    No clear table of contents detected yet—try the “Read section” button to extract the strongest portion.
-                  </div>
-                )}
               </div>
             )}
           </div>
