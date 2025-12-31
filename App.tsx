@@ -481,27 +481,29 @@ const App: React.FC = () => {
   // --- Rendering ---
 
   if (isCheckingKey) {
-     return <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">Loading...</div>;
+     return <div className="min-h-screen bg-paper flex items-center justify-center text-ink/60">Loading...</div>;
   }
 
   // API Key Gate / Landing Page
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen relative text-slate-200 flex flex-col items-center justify-center p-4 overflow-hidden">
+      <div className="min-h-screen relative flex items-center justify-center px-4 py-16 text-ink overflow-hidden">
         {/* Background */}
         <div className="fixed inset-0 pointer-events-none z-0">
-           <div className="absolute top-20 left-20 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob"></div>
-           <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob animation-delay-2000"></div>
+           <div className="absolute top-0 left-0 right-0 h-px bg-ink/15"></div>
+           <div className="absolute top-0 left-0 h-1 w-24 bg-accent"></div>
+           <div className="absolute -top-10 right-10 h-32 w-32 border border-ink/10"></div>
+           <div className="absolute bottom-10 left-12 h-24 w-24 border border-ink/10"></div>
         </div>
 
-        <div className="relative z-10 glass-panel max-w-lg w-full rounded-2xl p-1 shadow-2xl animate-fade-in">
-          <div className="bg-obsidian/60 rounded-xl p-10 text-center space-y-8">
+        <div className="relative z-10 glass-panel max-w-xl w-full rounded-[32px] p-1 shadow-luxe animate-rise">
+          <div className="relative bg-white rounded-[28px] p-10 sm:p-12 text-center space-y-8 border border-ink/10">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-2">
-                 <span className="text-xs font-semibold text-indigo-300 tracking-wider uppercase">Authentication Required</span>
+              <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-paper border border-ink/10 mb-2">
+                 <span className="text-[11px] font-semibold text-ink/70 tracking-[0.2em] uppercase">Authentication Required</span>
               </div>
-              <h1 className="text-4xl font-bold text-white tracking-tight">Lumina</h1>
-              <p className="text-slate-400 leading-relaxed">
+              <h1 className="text-5xl sm:text-6xl font-display font-extrabold tracking-[-0.06em] text-ink text-glow">Lumina</h1>
+              <p className="text-ink/60 leading-relaxed text-base sm:text-lg">
                 Enter your Google Cloud API key to unlock ultra-realistic AI narration. Your key is stored securely in your browser.
               </p>
             </div>
@@ -513,13 +515,13 @@ const App: React.FC = () => {
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder="Paste your Gemini API Key here"
-                  className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-5 py-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all text-sm font-mono"
+                  className="w-full bg-white border border-ink/20 rounded-xl px-5 py-4 text-ink placeholder-ink/40 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all text-sm font-mono shadow-sm"
                   required
                 />
                 <button 
                   type="submit"
                   disabled={!apiKey.trim()}
-                  className="w-full py-4 px-6 bg-white disabled:bg-slate-700 disabled:text-slate-500 text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-all shadow-xl shadow-white/10 active:scale-95 flex items-center justify-center gap-2"
+                  className="w-full py-4 px-6 bg-accent disabled:bg-ink/30 disabled:text-white/70 text-white font-semibold rounded-xl hover:bg-accent/90 transition-all shadow-glow active:scale-[0.99] flex items-center justify-center gap-2 tracking-tight"
                 >
                   Start Listening
                 </button>
@@ -527,15 +529,15 @@ const App: React.FC = () => {
             ) : (
               <button 
                 onClick={handleConnectApiKey}
-                className="w-full py-4 px-6 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-200 transition-all shadow-xl shadow-white/10 active:scale-95 flex items-center justify-center gap-2"
+                className="w-full py-4 px-6 bg-accent text-white font-semibold rounded-xl hover:bg-accent/90 transition-all shadow-glow active:scale-[0.99] flex items-center justify-center gap-2 tracking-tight"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.545,10.539h-4.817c-0.347,0.789-0.963,1.405-1.751,1.751v2.859h-1.928v-2.859c-0.789-0.347-1.405-0.963-1.751-1.751H1.539v-1.928h0.759c0.347-0.789,0.963-1.405,1.751-1.751V4.001h1.928v2.859c0.789,0.347,1.405,0.963,1.751,1.751h3.333l1.106-2.211l1.642,1.642l-2.211,1.106h2.298V10.539z M19.461,12.545h-2.298l2.211,1.106l-1.642,1.642l-1.106-2.211h-3.333c-0.347,0.789-0.963,1.405-1.751,1.751v2.859h-1.928v-2.859c-0.789-0.347-1.405-0.963-1.751-1.751H6.002v-1.928h1.862c0.347-0.789,0.963-1.405,1.751-1.751V7.544h1.928v2.859c0.789,0.347,1.405,0.963,1.751,1.751h4.817V12.545z"/></svg>
                 Connect API Key
               </button>
             )}
             
-            <p className="text-xs text-slate-500">
-              Need a key? <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 underline">Get one here</a>.
+            <p className="text-xs text-ink/50">
+              Need a key? <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-accent hover:text-accent/80 underline">Get one here</a>.
             </p>
           </div>
         </div>
@@ -546,7 +548,7 @@ const App: React.FC = () => {
   // --- Main App ---
 
   return (
-    <div className="min-h-screen relative text-slate-200 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8 pb-32 overflow-hidden selection:bg-indigo-500/30 selection:text-indigo-100">
+    <div className="min-h-screen relative text-ink flex flex-col items-center py-12 px-4 sm:px-6 lg:px-10 pb-36 overflow-hidden selection:bg-accent/20 selection:text-ink">
       
       {/* Settings Modal */}
       <SettingsModal 
@@ -556,80 +558,82 @@ const App: React.FC = () => {
         onVoiceChange={handleVoiceChange}
       />
 
-      {/* Logout Button (small) */}
-      <button 
-        onClick={handleLogout}
-        className="absolute top-4 left-4 text-xs font-medium text-slate-600 hover:text-red-400 transition-colors z-50 uppercase tracking-widest"
-      >
-        Disconnect
-      </button>
-
       {/* Ambient Background Effects */}
       <div className="fixed inset-0 pointer-events-none z-0">
-         <div className="absolute top-0 -left-4 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob"></div>
-         <div className="absolute top-0 -right-4 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob animation-delay-2000"></div>
-         <div className="absolute -bottom-8 left-20 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob animation-delay-4000"></div>
+         <div className="absolute top-0 left-0 right-0 h-px bg-ink/10"></div>
+         <div className="absolute top-0 left-0 h-1 w-24 bg-accent"></div>
+         <div className="absolute right-10 top-16 h-40 w-40 border border-ink/10"></div>
+         <div className="absolute left-8 bottom-16 h-28 w-28 border border-ink/10"></div>
       </div>
 
-      <header className="relative z-10 w-full max-w-4xl mb-12 text-center space-y-4 animate-fade-in">
-        
-        {/* Settings Button */}
-        <button 
-          onClick={() => setIsSettingsOpen(true)}
-          className="absolute top-0 right-0 p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors group z-50"
-          aria-label="Settings"
-        >
-          <svg className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </button>
-
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-2">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-500"></span>
-            <span className="text-xs font-medium text-slate-300 tracking-wide uppercase">Powered by Gemini</span>
+      <header className="relative z-10 w-full max-w-6xl mb-12 text-center space-y-6 animate-rise">
+        <div className="hero-grid" aria-hidden="true"></div>
+        <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-paper border border-ink/15">
+            <span className="flex h-2 w-2 rounded-full bg-accent"></span>
+            <span className="text-[11px] font-semibold text-ink/70 tracking-[0.2em] uppercase">Powered by Gemini</span>
+          </div>
+          <div className="flex items-center gap-2 bg-paper border border-ink/15 rounded-full p-1 pl-2">
+            <button 
+              onClick={() => setIsSettingsOpen(true)}
+              className="p-2 bg-white border border-ink/15 rounded-full hover:bg-paper transition-colors group"
+              aria-label="Settings"
+            >
+              <svg className="w-5 h-5 text-ink/60 group-hover:text-ink transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+            <button 
+              onClick={handleLogout}
+              className="px-4 py-2 text-[11px] font-semibold tracking-[0.2em] uppercase text-ink/60 border border-ink/15 rounded-full hover:text-ink hover:border-ink/30 transition-colors bg-white"
+            >
+              Disconnect
+            </button>
+          </div>
         </div>
-        <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-indigo-100 to-indigo-400 text-glow">
+
+        <h1 className="relative z-10 text-6xl sm:text-8xl font-display font-extrabold tracking-[-0.06em] leading-[0.9] text-ink text-glow">
           Lumina
         </h1>
-        <p className="text-lg text-slate-400 max-w-lg mx-auto leading-relaxed">
+        <p className="relative z-10 text-base sm:text-lg text-ink/60 max-w-2xl mx-auto leading-relaxed">
           Transform the web into your personal audio library with realistic AI narration.
         </p>
       </header>
 
-      <main className="relative z-10 w-full max-w-4xl space-y-8 animate-fade-in" style={{animationDelay: '0.1s'}}>
+      <main className="relative z-10 w-full max-w-6xl space-y-10 animate-rise" style={{animationDelay: '0.1s'}}>
         
         {/* Input Card */}
-        <div className="glass-panel p-1 rounded-2xl shadow-2xl shadow-indigo-500/10">
-          <div className="bg-obsidian/50 rounded-xl p-6 sm:p-8">
+        <div className="glass-panel rounded-[24px] shadow-luxe">
+          <div className="bg-paper rounded-[22px] p-6 sm:p-8 lg:p-10 border border-ink/10">
             
             {/* Tabs */}
-            <div className="flex gap-6 mb-6 border-b border-white/5">
+            <div className="flex items-center gap-6 border-b border-ink/10 mb-6">
               <button 
                 onClick={() => handleModeChange('url')}
-                className={`pb-4 text-sm font-semibold tracking-wide transition-all relative ${
+                className={`pb-3 text-xs font-semibold tracking-[0.2em] transition-all relative ${
                   mode === 'url' 
-                    ? 'text-white' 
-                    : 'text-slate-500 hover:text-slate-300'
+                    ? 'text-ink' 
+                    : 'text-ink/40 hover:text-ink'
                 }`}
               >
                 Article URL
-                {mode === 'url' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></span>}
+                {mode === 'url' && <span className="absolute bottom-0 left-0 h-0.5 w-full bg-accent"></span>}
               </button>
               <button 
                 onClick={() => handleModeChange('text')}
-                className={`pb-4 text-sm font-semibold tracking-wide transition-all relative ${
+                className={`pb-3 text-xs font-semibold tracking-[0.2em] transition-all relative ${
                   mode === 'text' 
-                    ? 'text-white' 
-                    : 'text-slate-500 hover:text-slate-300'
+                    ? 'text-ink' 
+                    : 'text-ink/40 hover:text-ink'
                 }`}
               >
                 Paste Text
-                {mode === 'text' && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></span>}
+                {mode === 'text' && <span className="absolute bottom-0 left-0 h-0.5 w-full bg-accent"></span>}
               </button>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 items-stretch">
+            <div className="flex flex-col sm:flex-row gap-4 items-center">
               {mode === 'url' && (
                 <div className="relative flex-1 group">
                   <input
@@ -637,10 +641,10 @@ const App: React.FC = () => {
                     placeholder="https://..."
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-5 py-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all font-mono text-sm"
+                    className="w-full bg-white border border-ink/20 rounded-xl px-5 py-4 text-ink placeholder-ink/40 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all font-mono text-sm shadow-sm"
                     onKeyDown={(e) => e.key === 'Enter' && handleFetchContent()}
                   />
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-500 -z-10 blur-sm"></div>
+                  <div className="absolute inset-0 rounded-xl bg-accent/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-500 -z-10"></div>
                 </div>
               )}
 
@@ -650,7 +654,7 @@ const App: React.FC = () => {
                     placeholder="Paste your content..."
                     value={rawText}
                     onChange={(e) => setRawText(e.target.value)}
-                    className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-5 py-4 text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all font-serif min-h-[100px]"
+                    className="w-full bg-white border border-ink/20 rounded-xl px-5 py-4 text-ink placeholder-ink/40 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all font-sans min-h-[140px] shadow-sm"
                   />
                 </div>
               )}
@@ -660,12 +664,12 @@ const App: React.FC = () => {
                 disabled={isLoadingContent || status === 'playing'}
                 className="
                   relative overflow-hidden
-                  bg-indigo-600 hover:bg-indigo-500 
-                  disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed
-                  text-white font-bold tracking-wide
+                  bg-accent hover:bg-accent/90 
+                  disabled:bg-ink/20 disabled:text-white/70 disabled:cursor-not-allowed
+                  text-white font-semibold tracking-tight
                   px-8 py-4 rounded-xl 
                   transition-all duration-300
-                  shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40
+                  shadow-glow hover:shadow-luxe
                   flex items-center justify-center min-w-[140px]
                   group
                 "
@@ -690,8 +694,8 @@ const App: React.FC = () => {
             </div>
             
             {error && (
-              <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 text-red-200 rounded-lg text-sm flex items-center gap-3 backdrop-blur-sm animate-fade-in">
-                <div className="bg-red-500/20 p-1.5 rounded-full">
+              <div className="mt-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center gap-3 animate-fade-in">
+                <div className="bg-red-100 p-1.5 rounded-full">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 {error}

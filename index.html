@@ -7,72 +7,45 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
           extend: {
             fontFamily: {
-              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-              serif: ['"Lora"', 'serif'],
+              sans: ['"IBM Plex Sans"', 'sans-serif'],
+              serif: ['"IBM Plex Sans"', 'sans-serif'],
+              display: ['"Sora"', 'sans-serif'],
             },
             colors: {
-              obsidian: '#020617',
-              glass: 'rgba(255, 255, 255, 0.03)',
-              'glass-border': 'rgba(255, 255, 255, 0.08)',
-              'glass-hover': 'rgba(255, 255, 255, 0.08)',
+              ink: '#1A1A1A',
+              paper: '#FAFAFA',
+              line: '#E6E6E6',
+              accent: '#0066FF',
+            },
+            boxShadow: {
+              luxe: '0 28px 70px -50px rgba(26, 26, 26, 0.45)',
+              lifted: '0 16px 40px -28px rgba(26, 26, 26, 0.4)',
+              glow: '0 18px 40px -24px rgba(0, 102, 255, 0.45)',
             },
             animation: {
-              'blob': 'blob 10s infinite',
-              'fade-in': 'fadeIn 0.5s ease-out forwards',
+              'fade-in': 'fadeIn 0.7s ease-out both',
+              rise: 'rise 0.8s ease-out both',
             },
             keyframes: {
-              blob: {
-                '0%': { transform: 'translate(0px, 0px) scale(1)' },
-                '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-                '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-                '100%': { transform: 'translate(0px, 0px) scale(1)' },
-              },
               fadeIn: {
                 '0%': { opacity: '0', transform: 'translateY(10px)' },
                 '100%': { opacity: '1', transform: 'translateY(0)' },
-              }
+              },
+              rise: {
+                '0%': { opacity: '0', transform: 'translateY(18px) scale(0.98)' },
+                '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+              },
             }
           }
         }
       }
     </script>
-    <style>
-      body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        background-color: #020617; /* Obsidian */
-        color: #f8fafc;
-        overflow-x: hidden;
-      }
-      /* Custom scrollbar */
-      ::-webkit-scrollbar {
-        width: 6px;
-      }
-      ::-webkit-scrollbar-track {
-        background: transparent; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #334155; 
-        border-radius: 3px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #475569; 
-      }
-      .glass-panel {
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-      .text-glow {
-        text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
-      }
-    </style>
 <script type="importmap">
 {
   "imports": {

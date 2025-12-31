@@ -20,19 +20,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-ink/50 transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal Content */}
-      <div className="relative w-full max-w-md bg-slate-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
+      <div className="relative w-full max-w-md bg-white border border-ink/20 rounded-2xl shadow-luxe overflow-hidden animate-rise">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/5 bg-white/5">
-          <h2 className="text-xl font-bold text-white tracking-tight">Settings</h2>
+        <div className="flex items-center justify-between p-6 border-b border-ink/15 bg-paper">
+          <h2 className="text-xl font-semibold text-ink tracking-[-0.02em]">Settings</h2>
           <button 
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+            className="p-2 text-ink/50 hover:text-ink hover:bg-ink/5 rounded-full transition-colors"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -43,7 +43,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Body */}
         <div className="p-6 space-y-6">
           <div className="space-y-3">
-            <label className="text-sm font-medium text-slate-400 uppercase tracking-wider">
+            <label className="text-sm font-medium text-ink/50 uppercase tracking-[0.2em]">
               Narrator Voice
             </label>
             <div className="grid gap-2">
@@ -54,8 +54,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   className={`
                     flex items-center justify-between p-3 rounded-xl border transition-all
                     ${selectedVoice === voice.name 
-                      ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-lg shadow-indigo-500/10' 
-                      : 'bg-white/5 border-transparent text-slate-400 hover:bg-white/10 hover:text-slate-200'
+                      ? 'bg-accent/10 border-accent/60 text-ink shadow-glow' 
+                      : 'bg-white border-transparent text-ink/60 hover:border-ink/15 hover:bg-paper'
                     }
                   `}
                 >
@@ -64,7 +64,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     <span className="text-xs opacity-70">{voice.gender}, {voice.style}</span>
                   </div>
                   {selectedVoice === voice.name && (
-                    <div className="text-indigo-400">
+                    <div className="text-accent">
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
