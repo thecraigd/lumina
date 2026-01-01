@@ -1,5 +1,10 @@
 :root {
   color-scheme: light;
+  --paper: #fafafa;
+  --paper-warm: #f4f1ea;
+  --ink: #1a1a1a;
+  --accent: #1e90ff;
+  --line: rgba(26, 26, 26, 0.16);
 }
 
 *,
@@ -9,12 +14,30 @@
 }
 
 body {
-  font-family: "IBM Plex Sans", sans-serif;
-  background-color: #fafafa;
-  color: #1a1a1a;
+  font-family: "Newsreader", serif;
+  background-color: var(--paper);
+  color: var(--ink);
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
+  background-image:
+    linear-gradient(180deg, rgba(26, 26, 26, 0.05), rgba(26, 26, 26, 0) 30%),
+    radial-gradient(rgba(26, 26, 26, 0.04) 1px, transparent 1px),
+    radial-gradient(rgba(26, 26, 26, 0.025) 1px, transparent 1px);
+  background-size: 100% 100%, 180px 180px, 90px 90px;
+  background-position: 0 0, 0 0, 40px 45px;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(26, 26, 26, 0.035) 0, rgba(26, 26, 26, 0.035) 1px, transparent 1px, transparent 160px),
+    repeating-linear-gradient(180deg, rgba(26, 26, 26, 0.02) 0, rgba(26, 26, 26, 0.02) 1px, transparent 1px, transparent 90px);
+  opacity: 0.25;
+  z-index: 0;
 }
 
 body::after {
@@ -23,8 +46,11 @@ body::after {
   top: 0;
   left: 0;
   right: 0;
-  height: 6px;
-  background: #0066ff;
+  height: 10px;
+  background:
+    linear-gradient(90deg, var(--accent) 0 160px, transparent 160px),
+    linear-gradient(180deg, rgba(26, 26, 26, 0.8) 0 1px, transparent 1px),
+    linear-gradient(180deg, transparent 6px, rgba(26, 26, 26, 0.45) 6px, transparent 7px);
   pointer-events: none;
   z-index: 0;
 }
@@ -36,8 +62,8 @@ body::after {
 }
 
 ::selection {
-  background: rgba(0, 102, 255, 0.2);
-  color: #1a1a1a;
+  background: rgba(30, 144, 255, 0.2);
+  color: var(--ink);
 }
 
 ::-webkit-scrollbar {
@@ -58,13 +84,13 @@ body::after {
 }
 
 .glass-panel {
-  background: #ffffff;
-  border: 1px solid rgba(26, 26, 26, 0.12);
-  box-shadow: 0 24px 60px -40px rgba(26, 26, 26, 0.35);
+  background: rgba(250, 250, 250, 0.95);
+  border: 1px solid rgba(26, 26, 26, 0.18);
+  box-shadow: 0 30px 60px -48px rgba(26, 26, 26, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .text-glow {
-  text-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.6), 0 18px 28px rgba(0, 0, 0, 0.22);
 }
 
 .animation-delay-2000 {
@@ -77,15 +103,52 @@ body::after {
 
 .hero-grid {
   position: absolute;
-  inset: -20% 0 auto 0;
-  height: 240px;
+  inset: -10% 0 auto 0;
+  height: 280px;
   background-image:
-    linear-gradient(90deg, rgba(26, 26, 26, 0.08) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(26, 26, 26, 0.08) 1px, transparent 1px);
-  background-size: 140px 140px;
-  opacity: 0.2;
+    repeating-linear-gradient(90deg, rgba(26, 26, 26, 0.07) 0, rgba(26, 26, 26, 0.07) 1px, transparent 1px, transparent 180px),
+    linear-gradient(180deg, rgba(26, 26, 26, 0.08), transparent 55%);
+  background-size: 180px 100%, 100% 100%;
+  opacity: 0.35;
   pointer-events: none;
   z-index: 0;
   mask-image: radial-gradient(circle at 50% 0%, black 0%, transparent 70%);
   -webkit-mask-image: radial-gradient(circle at 50% 0%, black 0%, transparent 70%);
+}
+
+.paper-stack {
+  position: relative;
+  z-index: 0;
+}
+
+.paper-stack::before,
+.paper-stack::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--paper-warm);
+  border: 1px solid rgba(26, 26, 26, 0.12);
+  z-index: -1;
+}
+
+.paper-stack::before {
+  transform: translate(12px, 12px);
+  opacity: 0.6;
+}
+
+.paper-stack::after {
+  transform: translate(6px, 6px);
+  opacity: 0.85;
+  background: var(--paper);
+}
+
+.dropcap:first-letter {
+  float: left;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 3.4rem;
+  line-height: 0.85;
+  padding-right: 0.22em;
+  padding-top: 0.06em;
+  font-weight: 700;
+  color: var(--ink);
 }

@@ -28,7 +28,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             value={selectedVoice}
             onChange={(e) => onVoiceChange(e.target.value)}
             disabled={disabled}
-            className="w-full appearance-none bg-white border border-ink/20 text-ink py-3 pl-4 pr-10 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium cursor-pointer hover:bg-paper"
+            className="w-full appearance-none bg-paper border border-ink/20 text-ink py-3 pl-4 pr-10 rounded-lg focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium cursor-pointer hover:bg-newsprint"
           >
             {VOICES.map((voice) => (
               <option key={voice.name} value={voice.name}>

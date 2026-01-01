@@ -7,30 +7,34 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,500;6..72,600;6..72,700&family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
       tailwind.config = {
         theme: {
           extend: {
             fontFamily: {
-              sans: ['"IBM Plex Sans"', 'sans-serif'],
-              serif: ['"IBM Plex Sans"', 'sans-serif'],
-              display: ['"Sora"', 'sans-serif'],
+              sans: ['"Space Grotesk"', 'sans-serif'],
+              serif: ['"Newsreader"', 'serif'],
+              display: ['"Space Grotesk"', 'sans-serif'],
+              mono: ['"IBM Plex Mono"', 'monospace'],
             },
             colors: {
               ink: '#1A1A1A',
               paper: '#FAFAFA',
-              line: '#E6E6E6',
-              accent: '#0066FF',
+              newsprint: '#F4F1EA',
+              line: '#DED8CE',
+              accent: '#1E90FF',
             },
             boxShadow: {
-              luxe: '0 28px 70px -50px rgba(26, 26, 26, 0.45)',
-              lifted: '0 16px 40px -28px rgba(26, 26, 26, 0.4)',
-              glow: '0 18px 40px -24px rgba(0, 102, 255, 0.45)',
+              luxe: '0 30px 60px -48px rgba(26, 26, 26, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.65)',
+              lifted: '0 16px 36px -28px rgba(26, 26, 26, 0.35)',
+              glow: '0 18px 40px -24px rgba(30, 144, 255, 0.45)',
+              press: 'inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -2px 0 rgba(26, 26, 26, 0.12)',
             },
             animation: {
-              'fade-in': 'fadeIn 0.7s ease-out both',
-              rise: 'rise 0.8s ease-out both',
+              'fade-in': 'fadeIn 0.8s ease-out both',
+              rise: 'rise 0.9s ease-out both',
+              'print-in': 'printIn 0.9s ease-out both',
             },
             keyframes: {
               fadeIn: {
@@ -40,6 +44,10 @@
               rise: {
                 '0%': { opacity: '0', transform: 'translateY(18px) scale(0.98)' },
                 '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+              },
+              printIn: {
+                '0%': { opacity: '0', transform: 'translateY(14px)', filter: 'blur(4px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)', filter: 'blur(0)' },
               },
             }
           }

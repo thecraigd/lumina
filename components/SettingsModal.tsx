@@ -25,11 +25,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       />
 
       {/* Modal Content */}
-      <div className="relative w-full max-w-md bg-white border border-ink/20 rounded-2xl shadow-luxe overflow-hidden animate-rise">
+      <div className="relative w-full max-w-md bg-newsprint border border-ink/25 rounded-[18px] shadow-luxe overflow-hidden animate-rise">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-ink/15 bg-paper">
-          <h2 className="text-xl font-semibold text-ink tracking-[-0.02em]">Settings</h2>
+        <div className="flex items-center justify-between p-6 border-b border-ink/20 bg-paper">
+          <h2 className="text-xl font-semibold text-ink tracking-[0.2em] uppercase">Settings</h2>
           <button 
             onClick={onClose}
             className="p-2 text-ink/50 hover:text-ink hover:bg-ink/5 rounded-full transition-colors"
@@ -43,7 +43,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Body */}
         <div className="p-6 space-y-6">
           <div className="space-y-3">
-            <label className="text-sm font-medium text-ink/50 uppercase tracking-[0.2em]">
+            <label className="text-sm font-medium text-ink/50 uppercase tracking-[0.3em]">
               Narrator Voice
             </label>
             <div className="grid gap-2">
@@ -52,10 +52,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   key={voice.name}
                   onClick={() => onVoiceChange(voice.name)}
                   className={`
-                    flex items-center justify-between p-3 rounded-xl border transition-all
+                    flex items-center justify-between p-3 rounded-[12px] border transition-all
                     ${selectedVoice === voice.name 
                       ? 'bg-accent/10 border-accent/60 text-ink shadow-glow' 
-                      : 'bg-white border-transparent text-ink/60 hover:border-ink/15 hover:bg-paper'
+                      : 'bg-paper border-transparent text-ink/60 hover:border-ink/15 hover:bg-newsprint'
                     }
                   `}
                 >

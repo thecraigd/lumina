@@ -481,7 +481,7 @@ const App: React.FC = () => {
   // --- Rendering ---
 
   if (isCheckingKey) {
-     return <div className="min-h-screen bg-paper flex items-center justify-center text-ink/60">Loading...</div>;
+     return <div className="min-h-screen bg-paper flex items-center justify-center text-ink/60 font-display uppercase tracking-[0.3em]">Loading...</div>;
   }
 
   // API Key Gate / Landing Page
@@ -490,55 +490,59 @@ const App: React.FC = () => {
       <div className="min-h-screen relative flex items-center justify-center px-4 py-16 text-ink overflow-hidden">
         {/* Background */}
         <div className="fixed inset-0 pointer-events-none z-0">
-           <div className="absolute top-0 left-0 right-0 h-px bg-ink/15"></div>
-           <div className="absolute top-0 left-0 h-1 w-24 bg-accent"></div>
-           <div className="absolute -top-10 right-10 h-32 w-32 border border-ink/10"></div>
-           <div className="absolute bottom-10 left-12 h-24 w-24 border border-ink/10"></div>
+           <div className="absolute inset-6 border border-ink/10"></div>
+           <div className="absolute inset-10 border border-ink/5"></div>
+           <div className="absolute top-6 left-6 right-6 h-px bg-ink/20"></div>
+           <div className="absolute top-9 left-6 right-6 h-px bg-ink/10"></div>
         </div>
 
-        <div className="relative z-10 glass-panel max-w-xl w-full rounded-[32px] p-1 shadow-luxe animate-rise">
-          <div className="relative bg-white rounded-[28px] p-10 sm:p-12 text-center space-y-8 border border-ink/10">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-paper border border-ink/10 mb-2">
-                 <span className="text-[11px] font-semibold text-ink/70 tracking-[0.2em] uppercase">Authentication Required</span>
+        <div className="relative z-10 w-full max-w-xl paper-stack animate-print-in">
+          <div className="glass-panel rounded-[18px] p-1 shadow-luxe">
+            <div className="relative bg-newsprint rounded-[16px] p-10 sm:p-12 text-center space-y-8 border border-ink/10">
+              <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.35em] text-ink/50 border-y border-ink/15 py-2">
+                 <span>Audio Edition</span>
+                 <span>Issue 07</span>
               </div>
-              <h1 className="text-5xl sm:text-6xl font-display font-extrabold tracking-[-0.06em] text-ink text-glow">Lumina</h1>
-              <p className="text-ink/60 leading-relaxed text-base sm:text-lg">
-                Enter your Google Cloud API key to unlock ultra-realistic AI narration. Your key is stored securely in your browser.
+              <div className="space-y-4 pt-2">
+                <span className="text-[11px] font-semibold text-ink/60 tracking-[0.4em] uppercase">Authentication Required</span>
+                <h1 className="text-5xl sm:text-6xl font-display font-black tracking-[-0.08em] uppercase text-ink text-glow">Lumina</h1>
+                <p className="text-ink/60 leading-relaxed text-base sm:text-lg font-serif">
+                  Enter your Google Cloud API key to unlock ultra-realistic AI narration. Your key is stored securely in your browser.
+                </p>
+              </div>
+
+              {useManualKey ? (
+                <form onSubmit={handleManualKeySubmit} className="space-y-4">
+                  <input
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="Paste your Gemini API Key here"
+                    className="w-full bg-paper border border-ink/25 rounded-md px-5 py-4 text-ink placeholder-ink/40 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all text-sm font-mono shadow-press"
+                    required
+                  />
+                  <button 
+                    type="submit"
+                    disabled={!apiKey.trim()}
+                    className="w-full py-4 px-6 bg-accent disabled:bg-ink/30 disabled:text-white/70 text-white font-semibold uppercase tracking-[0.24em] rounded-md hover:bg-accent/90 transition-all shadow-press active:scale-[0.99] flex items-center justify-center gap-2 border-2 border-ink"
+                  >
+                    Start Listening
+                  </button>
+                </form>
+              ) : (
+                <button 
+                  onClick={handleConnectApiKey}
+                  className="w-full py-4 px-6 bg-accent text-white font-semibold uppercase tracking-[0.24em] rounded-md hover:bg-accent/90 transition-all shadow-press active:scale-[0.99] flex items-center justify-center gap-2 border-2 border-ink"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.545,10.539h-4.817c-0.347,0.789-0.963,1.405-1.751,1.751v2.859h-1.928v-2.859c-0.789-0.347-1.405-0.963-1.751-1.751H1.539v-1.928h0.759c0.347-0.789,0.963-1.405,1.751-1.751V4.001h1.928v2.859c0.789,0.347,1.405,0.963,1.751,1.751h3.333l1.106-2.211l1.642,1.642l-2.211,1.106h2.298V10.539z M19.461,12.545h-2.298l2.211,1.106l-1.642,1.642l-1.106-2.211h-3.333c-0.347,0.789-0.963,1.405-1.751,1.751v2.859h-1.928v-2.859c-0.789-0.347-1.405-0.963-1.751-1.751H6.002v-1.928h1.862c0.347-0.789,0.963-1.405,1.751-1.751V7.544h1.928v2.859c0.789,0.347,1.405,0.963,1.751,1.751h4.817V12.545z"/></svg>
+                  Connect API Key
+                </button>
+              )}
+              
+              <p className="text-xs text-ink/50 uppercase tracking-[0.25em]">
+                Need a key? <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-accent hover:text-accent/80 underline decoration-accent/40">Get one here</a>.
               </p>
             </div>
-
-            {useManualKey ? (
-              <form onSubmit={handleManualKeySubmit} className="space-y-4">
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Paste your Gemini API Key here"
-                  className="w-full bg-white border border-ink/20 rounded-xl px-5 py-4 text-ink placeholder-ink/40 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all text-sm font-mono shadow-sm"
-                  required
-                />
-                <button 
-                  type="submit"
-                  disabled={!apiKey.trim()}
-                  className="w-full py-4 px-6 bg-accent disabled:bg-ink/30 disabled:text-white/70 text-white font-semibold rounded-xl hover:bg-accent/90 transition-all shadow-glow active:scale-[0.99] flex items-center justify-center gap-2 tracking-tight"
-                >
-                  Start Listening
-                </button>
-              </form>
-            ) : (
-              <button 
-                onClick={handleConnectApiKey}
-                className="w-full py-4 px-6 bg-accent text-white font-semibold rounded-xl hover:bg-accent/90 transition-all shadow-glow active:scale-[0.99] flex items-center justify-center gap-2 tracking-tight"
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.545,10.539h-4.817c-0.347,0.789-0.963,1.405-1.751,1.751v2.859h-1.928v-2.859c-0.789-0.347-1.405-0.963-1.751-1.751H1.539v-1.928h0.759c0.347-0.789,0.963-1.405,1.751-1.751V4.001h1.928v2.859c0.789,0.347,1.405,0.963,1.751,1.751h3.333l1.106-2.211l1.642,1.642l-2.211,1.106h2.298V10.539z M19.461,12.545h-2.298l2.211,1.106l-1.642,1.642l-1.106-2.211h-3.333c-0.347,0.789-0.963,1.405-1.751,1.751v2.859h-1.928v-2.859c-0.789-0.347-1.405-0.963-1.751-1.751H6.002v-1.928h1.862c0.347-0.789,0.963-1.405,1.751-1.751V7.544h1.928v2.859c0.789,0.347,1.405,0.963,1.751,1.751h4.817V12.545z"/></svg>
-                Connect API Key
-              </button>
-            )}
-            
-            <p className="text-xs text-ink/50">
-              Need a key? <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noopener noreferrer" className="text-accent hover:text-accent/80 underline">Get one here</a>.
-            </p>
           </div>
         </div>
       </div>
@@ -548,7 +552,7 @@ const App: React.FC = () => {
   // --- Main App ---
 
   return (
-    <div className="min-h-screen relative text-ink flex flex-col items-center py-12 px-4 sm:px-6 lg:px-10 pb-36 overflow-hidden selection:bg-accent/20 selection:text-ink">
+    <div className="min-h-screen relative text-ink flex flex-col items-center py-10 px-4 sm:px-8 lg:px-12 pb-36 overflow-hidden selection:bg-accent/20 selection:text-ink">
       
       {/* Settings Modal */}
       <SettingsModal 
@@ -560,23 +564,24 @@ const App: React.FC = () => {
 
       {/* Ambient Background Effects */}
       <div className="fixed inset-0 pointer-events-none z-0">
-         <div className="absolute top-0 left-0 right-0 h-px bg-ink/10"></div>
-         <div className="absolute top-0 left-0 h-1 w-24 bg-accent"></div>
-         <div className="absolute right-10 top-16 h-40 w-40 border border-ink/10"></div>
-         <div className="absolute left-8 bottom-16 h-28 w-28 border border-ink/10"></div>
+         <div className="absolute inset-6 border border-ink/10"></div>
+         <div className="absolute inset-10 border border-ink/5"></div>
+         <div className="absolute top-6 left-6 right-6 h-px bg-ink/20"></div>
+         <div className="absolute top-9 left-6 right-6 h-px bg-ink/10"></div>
+         <div className="absolute bottom-6 left-6 right-6 h-px bg-ink/15"></div>
       </div>
 
-      <header className="relative z-10 w-full max-w-6xl mb-12 text-center space-y-6 animate-rise">
+      <header className="relative z-10 w-full max-w-6xl mb-12 space-y-8 animate-print-in">
         <div className="hero-grid" aria-hidden="true"></div>
-        <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-paper border border-ink/15">
-            <span className="flex h-2 w-2 rounded-full bg-accent"></span>
-            <span className="text-[11px] font-semibold text-ink/70 tracking-[0.2em] uppercase">Powered by Gemini</span>
+        <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 text-[11px] font-semibold uppercase tracking-[0.32em]">
+          <div className="flex items-center gap-2">
+            <span className="flex h-2 w-2 bg-accent"></span>
+            <span className="text-ink/70">Powered by Gemini</span>
           </div>
-          <div className="flex items-center gap-2 bg-paper border border-ink/15 rounded-full p-1 pl-2">
+          <div className="flex items-center gap-2">
             <button 
               onClick={() => setIsSettingsOpen(true)}
-              className="p-2 bg-white border border-ink/15 rounded-full hover:bg-paper transition-colors group"
+              className="p-2 border border-ink/20 bg-paper rounded-md hover:bg-newsprint transition-colors group"
               aria-label="Settings"
             >
               <svg className="w-5 h-5 text-ink/60 group-hover:text-ink transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -586,32 +591,48 @@ const App: React.FC = () => {
             </button>
             <button 
               onClick={handleLogout}
-              className="px-4 py-2 text-[11px] font-semibold tracking-[0.2em] uppercase text-ink/60 border border-ink/15 rounded-full hover:text-ink hover:border-ink/30 transition-colors bg-white"
+              className="px-4 py-2 text-[11px] font-semibold tracking-[0.3em] uppercase text-ink/60 border border-ink/20 rounded-md hover:text-ink hover:border-ink/40 transition-colors bg-paper"
             >
               Disconnect
             </button>
           </div>
         </div>
 
-        <h1 className="relative z-10 text-6xl sm:text-8xl font-display font-extrabold tracking-[-0.06em] leading-[0.9] text-ink text-glow">
-          Lumina
-        </h1>
-        <p className="relative z-10 text-base sm:text-lg text-ink/60 max-w-2xl mx-auto leading-relaxed">
+        <div className="relative z-10 border-y border-ink/20 py-6 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div className="space-y-3">
+            <span className="text-[11px] font-semibold text-ink/50 tracking-[0.4em] uppercase">Audio Edition</span>
+            <h1 className="text-6xl sm:text-8xl lg:text-9xl font-display font-black tracking-[-0.08em] leading-[0.85] uppercase text-ink text-glow">
+              Lumina
+            </h1>
+          </div>
+          <div className="text-[11px] uppercase tracking-[0.3em] text-ink/50 leading-relaxed">
+            <div>Issue 07</div>
+            <div>Volume 02</div>
+            <div>Desk: Listening</div>
+          </div>
+        </div>
+
+        <p className="relative z-10 text-base sm:text-lg text-ink/70 max-w-2xl leading-relaxed font-serif">
           Transform the web into your personal audio library with realistic AI narration.
         </p>
       </header>
 
-      <main className="relative z-10 w-full max-w-6xl space-y-10 animate-rise" style={{animationDelay: '0.1s'}}>
+      <main className="relative z-10 w-full max-w-6xl space-y-12 animate-print-in" style={{animationDelay: '0.1s'}}>
         
         {/* Input Card */}
-        <div className="glass-panel rounded-[24px] shadow-luxe">
-          <div className="bg-paper rounded-[22px] p-6 sm:p-8 lg:p-10 border border-ink/10">
+        <div className="paper-stack">
+          <div className="glass-panel rounded-[18px] shadow-luxe">
+            <div className="bg-newsprint rounded-[16px] p-6 sm:p-8 lg:p-10 border border-ink/10">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-ink/15 pb-4 mb-6 text-[11px] uppercase tracking-[0.3em] text-ink/50">
+                <span>Listening Desk</span>
+                <span>Submission</span>
+              </div>
             
             {/* Tabs */}
-            <div className="flex items-center gap-6 border-b border-ink/10 mb-6">
+            <div className="flex items-center gap-6 border-b border-ink/15 mb-6">
               <button 
                 onClick={() => handleModeChange('url')}
-                className={`pb-3 text-xs font-semibold tracking-[0.2em] transition-all relative ${
+                className={`pb-3 text-[11px] font-semibold tracking-[0.3em] uppercase transition-all relative ${
                   mode === 'url' 
                     ? 'text-ink' 
                     : 'text-ink/40 hover:text-ink'
@@ -622,7 +643,7 @@ const App: React.FC = () => {
               </button>
               <button 
                 onClick={() => handleModeChange('text')}
-                className={`pb-3 text-xs font-semibold tracking-[0.2em] transition-all relative ${
+                className={`pb-3 text-[11px] font-semibold tracking-[0.3em] uppercase transition-all relative ${
                   mode === 'text' 
                     ? 'text-ink' 
                     : 'text-ink/40 hover:text-ink'
@@ -641,10 +662,10 @@ const App: React.FC = () => {
                     placeholder="https://..."
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
-                    className="w-full bg-white border border-ink/20 rounded-xl px-5 py-4 text-ink placeholder-ink/40 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all font-mono text-sm shadow-sm"
+                    className="w-full bg-paper border border-ink/25 rounded-md px-5 py-4 text-ink placeholder-ink/40 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all font-mono text-sm shadow-press"
                     onKeyDown={(e) => e.key === 'Enter' && handleFetchContent()}
                   />
-                  <div className="absolute inset-0 rounded-xl bg-accent/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-500 -z-10"></div>
+                  <div className="absolute inset-0 rounded-md bg-accent/10 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-500 -z-10"></div>
                 </div>
               )}
 
@@ -654,7 +675,7 @@ const App: React.FC = () => {
                     placeholder="Paste your content..."
                     value={rawText}
                     onChange={(e) => setRawText(e.target.value)}
-                    className="w-full bg-white border border-ink/20 rounded-xl px-5 py-4 text-ink placeholder-ink/40 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all font-sans min-h-[140px] shadow-sm"
+                    className="w-full bg-paper border border-ink/25 rounded-md px-5 py-4 text-ink placeholder-ink/40 focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all font-serif min-h-[140px] shadow-press"
                   />
                 </div>
               )}
@@ -666,12 +687,12 @@ const App: React.FC = () => {
                   relative overflow-hidden
                   bg-accent hover:bg-accent/90 
                   disabled:bg-ink/20 disabled:text-white/70 disabled:cursor-not-allowed
-                  text-white font-semibold tracking-tight
-                  px-8 py-4 rounded-xl 
+                  text-white font-semibold uppercase tracking-[0.24em]
+                  px-8 py-4 rounded-md 
                   transition-all duration-300
-                  shadow-glow hover:shadow-luxe
-                  flex items-center justify-center min-w-[140px]
-                  group
+                  shadow-press
+                  flex items-center justify-center min-w-[160px]
+                  group border-2 border-ink
                 "
               >
                 <div className="relative z-10 flex items-center gap-2">
@@ -694,7 +715,7 @@ const App: React.FC = () => {
             </div>
             
             {error && (
-              <div className="mt-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center gap-3 animate-fade-in">
+              <div className="mt-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm flex items-center gap-3 animate-fade-in">
                 <div className="bg-red-100 p-1.5 rounded-full">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
@@ -703,9 +724,10 @@ const App: React.FC = () => {
             )}
           </div>
         </div>
+        </div>
 
         {/* Article Display */}
-        <div className="animate-fade-in" style={{animationDelay: '0.2s'}}>
+        <div className="animate-print-in" style={{animationDelay: '0.2s'}}>
             <ArticleDisplay 
             chunks={textChunks}
             currentChunkIndex={currentChunkIndex}
