@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Lumina favicon">
+  <defs>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1E90FF"/>
+      <stop offset="100%" stop-color="#4AA8FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="48" fill="#FAFAFA"/>
+  <rect x="18" y="18" width="220" height="220" rx="40" fill="none" stroke="#DED8CE" stroke-width="6"/>
+  <path
+    d="M72 64h40v112h76v40H72z"
+    fill="#1A1A1A"
+  />
+  <g fill="none" stroke="url(#accent)" stroke-linecap="round">
+    <path d="M164 84c18 12 28 30 28 44s-10 32-28 44" stroke-width="10"/>
+    <path d="M180 70c26 18 40 44 40 58s-14 40-40 58" stroke-width="6"/>
+  </g>
+</svg>
