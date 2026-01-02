@@ -9,7 +9,7 @@ Turn web articles and pasted text into natural-sounding audio using Google Gemin
 
 Live at https://reader-lumina.netlify.app/
 
-[![The Lumina interface](lumina.png)](https://reader-lumina.netlify.app/)
+[![The Lumina interface](https://www.craigdoesdata.com/img/blog/lumina.png)](https://reader-lumina.netlify.app/)
 
 ## What it does
 - Extracts main article text from a URL and narrates it with AI voices.
